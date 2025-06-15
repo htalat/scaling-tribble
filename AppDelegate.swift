@@ -70,49 +70,41 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         for repo in repos {
             let isRunning = processManager.runningProcesses[repo.path]?.isRunning == true
             let statusIcon = isRunning ? "🟢 " : ""
-            let repoMenuItem = NSMenuItem(title: "\(statusIcon)\(repo.name) (\(repo.branch))", action: nil, keyEquivalent: "")
             
-            let submenu = createRepositorySubmenu(for: repo, isRunning: isRunning)
-            repoMenuItem.submenu = submenu
+            // Repository name item
+            let repoMenuItem = NSMenuItem(title: "\(statusIcon)\(repo.name) (\(repo.branch))", action: nil, keyEquivalent: "")
+            repoMenuItem.isEnabled = false
             menu.addItem(repoMenuItem)
+            
+            // Open button
+            let openItem = NSMenuItem(title: "  📂 Open", action: #selector(openRepository(_:)), keyEquivalent: "")
+            openItem.representedObject = repo.path
+            menu.addItem(openItem)
+            
+            // Start/Stop button
+            if let startCommand = repo.startCommand, !startCommand.isEmpty {
+                if isRunning {
+                    let stopItem = NSMenuItem(title: "  ⏹️ Stop App", action: #selector(stopApp(_:)), keyEquivalent: "")
+                    stopItem.representedObject = repo.path
+                    menu.addItem(stopItem)
+                } else {
+                    let startItem = NSMenuItem(title: "  ▶️ Start App", action: #selector(startApp(_:)), keyEquivalent: "")
+                    startItem.representedObject = repo.path
+                    menu.addItem(startItem)
+                }
+            }
+            
+            // Description
+            if let description = repo.description {
+                let descItem = NSMenuItem(title: "  ℹ️ \(description)", action: nil, keyEquivalent: "")
+                descItem.isEnabled = false
+                menu.addItem(descItem)
+            }
+            
+            menu.addItem(NSMenuItem.separator())
         }
     }
     
-    private func createRepositorySubmenu(for repo: ConfiguredRepo, isRunning: Bool) -> NSMenu {
-        let submenu = NSMenu()
-        
-        // Open item
-        let openItem = NSMenuItem(title: "Open", action: #selector(openRepository(_:)), keyEquivalent: "")
-        openItem.representedObject = repo.path
-        openItem.isEnabled = true
-        submenu.addItem(openItem)
-        
-        submenu.addItem(NSMenuItem.separator())
-        
-        // Start/Stop items
-        if let startCommand = repo.startCommand, !startCommand.isEmpty {
-            if isRunning {
-                let stopItem = NSMenuItem(title: "Stop App", action: #selector(stopApp(_:)), keyEquivalent: "")
-                stopItem.representedObject = repo.path
-                stopItem.isEnabled = true
-                submenu.addItem(stopItem)
-            } else {
-                let startItem = NSMenuItem(title: "Start App", action: #selector(startApp(_:)), keyEquivalent: "")
-                startItem.representedObject = repo.path
-                startItem.isEnabled = true
-                submenu.addItem(startItem)
-            }
-        }
-        
-        // Description item
-        if let description = repo.description {
-            let descItem = NSMenuItem(title: description, action: nil, keyEquivalent: "")
-            descItem.isEnabled = false
-            submenu.addItem(descItem)
-        }
-        
-        return submenu
-    }
     
     private func addControlItems(to menu: NSMenu) {
         menu.addItem(NSMenuItem.separator())
