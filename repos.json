@@ -1,0 +1,11 @@
+{
+  "repositories": [
+    {
+      "name": "My Web App",
+      "path": "/Users/htalat/Developer/swyxkit",
+      "startCommand": "npm run start",
+      "stopCommand": null,
+      "description": "React web application"
+    }
+  ]
+}
